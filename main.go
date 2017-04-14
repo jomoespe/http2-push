@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	PAGE_URL   = "/"
-	PAGE       = `<!DOCTYPE html>
+	address  = ":8443"
+	PAGE_URL = "/"
+	PAGE     = `<!DOCTYPE html>
 <html>
 <script type="text/javascript" src="script.js" defer></script>
 <title>HTTP/2 Push example</title>
@@ -17,7 +18,7 @@ const (
 <p id="main"></p>
 </html>`
 	SCRIPT_URL = "/script.js"
-	SCRIPT = `(function() {
+	SCRIPT     = `(function() {
 	document.querySelector("#main").innerHTML = 'HTTP/2 Push example content';	
 })();`
 )
@@ -35,16 +36,21 @@ func page(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.Header().Set("Content-Type", "text/html")
+	w.Header().Set("Link", "<script.js>; rel=preload; as=script")
 	io.WriteString(w, PAGE)
 }
 
 func main() {
 	http.HandleFunc(PAGE_URL, page)
 	http.HandleFunc(SCRIPT_URL, script)
-	server := &http.Server {
-		Addr:         ":8443",
+	server := &http.Server{
+		Addr:         address,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	server.ListenAndServeTLS("server.crt", "server.key")
+	fmt.Printf("Listening on port %s\n", address)
+	err := server.ListenAndServeTLS("server.crt", "server.key")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
