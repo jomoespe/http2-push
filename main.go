@@ -31,12 +31,12 @@ func script(w http.ResponseWriter, r *http.Request) {
 func page(w http.ResponseWriter, r *http.Request) {
 	if pusher, ok := w.(http.Pusher); ok {
 		// HTTP/2 Push is supported
+		w.Header().Set("Link", "<script.js>; rel=preload; as=script")
 		if err := pusher.Push(SCRIPT_URL, nil); err != nil {
 			fmt.Printf("Failder to push: %v\n", err)
 		}
 	}
 	w.Header().Set("Content-Type", "text/html")
-	w.Header().Set("Link", "<script.js>; rel=preload; as=script")
 	io.WriteString(w, PAGE)
 }
 
